@@ -1,4 +1,4 @@
-#define PLUGIN_VERSION "1.0.0"
+#define PLUGIN_VERSION "1.1.0"
 
 #include <sourcemod>
 
@@ -43,12 +43,16 @@ public OnPluginStart()
 {
 	CreateConVar(
 		"l4d2_dynamic_slots_version", PLUGIN_VERSION,
-		"Dynamic Slots plugin version", FCVAR_PLUGIN | FCVAR_SPONLY  | FCVAR_NOTIFY | FCVAR_DONTRECORD
+		"Dynamic Slots plugin version", FCVAR_PLUGIN | FCVAR_SPONLY | FCVAR_NOTIFY | FCVAR_DONTRECORD
 	);
 
 	g_hTankHealth = FindConVar( CVAR_TANK_HEALTH );
 	g_hSurvivorLimit = FindConVar( CVAR_SURVIVOR_LIMIT );
 	g_hInfectedLimit = FindConVar( CVAR_INFECTED_LIMIT );
+
+	SuppressNotify( g_hTankHealth );
+	SuppressNotify( g_hSurvivorLimit );
+	SuppressNotify( g_hInfectedLimit );
 
 	SetConVarBounds( g_hSurvivorLimit, ConVarBound_Upper, true, 32.0 );
 	SetConVarBounds( g_hInfectedLimit, ConVarBound_Upper, true, 32.0 );
@@ -68,6 +72,8 @@ public OnAllPluginsLoaded()
 	)
 	{
 		g_bSuperVersusReady = true;
+		SuppressNotify( g_hSuperVersusSurvivorLimit );
+		SuppressNotify( g_hSuperVersusInfectedLimit );
 		SetConVarBounds( g_hSuperVersusSurvivorLimit, ConVarBound_Upper, true, 32.0 );
 		SetConVarBounds( g_hSuperVersusInfectedLimit, ConVarBound_Upper, true, 32.0 );
 	}
@@ -242,6 +248,11 @@ SetSlotsAmount()
 
 	SetConVarInt( g_hSurvivorLimit, g_iTeamMax );
 	SetConVarInt( g_hInfectedLimit, g_iTeamMax );
+}
+
+SuppressNotify( Handle:cvar )
+{
+	SetConVarFlags( cvar, GetConVarFlags( cvar ) & ~FCVAR_NOTIFY );
 }
 
 bool:IsPlayerTank( client )
